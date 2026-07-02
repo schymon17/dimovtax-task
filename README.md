@@ -46,7 +46,7 @@ The Postgres service is exposed on host port `5433` and uses:
 DATABASE_URL=postgres://postgres:postgres@localhost:5433/dimovtax
 ```
 
-Seed data is loaded from [db/init/001_create_projects.sql](/Users/szymonszymczyna/Documents/Projects/dimovtax-task/db/init/001_create_projects.sql) the first time the Docker volume is created.
+Seed data is loaded from [db/init/001_create_projects.sql](db/init/001_create_projects.sql) the first time the Docker volume is created.
 
 ## Local Development
 
@@ -65,6 +65,12 @@ npm run dev
 
 Open the URL printed by Next.js, usually [http://localhost:3000](http://localhost:3000).
 
+The app defaults to:
+
+```text
+DATABASE_URL=postgres://postgres:postgres@localhost:5433/dimovtax
+```
+
 ## Authentication
 
 The demo account can be configured with environment variables:
@@ -78,6 +84,8 @@ SESSION_SECRET=change-this-for-shared-environments
 
 Dashboard and project API routes require a valid HTTP-only session cookie. Passwords are verified with a `scrypt` hash, not stored or compared as plaintext.
 
+When setting `DEMO_PASSWORD_HASH` directly in `docker-compose.yml`, escape `$` as `$$` so Compose does not treat hash segments as environment variables.
+
 Generate a replacement password hash with:
 
 ```bash
@@ -85,6 +93,8 @@ node -e 'const { randomBytes, scryptSync } = require("crypto"); const password =
 ```
 
 ## REST API
+
+Project endpoints require an authenticated browser session. Sign in through `/login` first, then call the API with the session cookie.
 
 `GET /api/projects`
 
