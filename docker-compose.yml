@@ -25,6 +25,8 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/dimovtax
+      DEMO_PASSWORD_HASH: scrypt$$nl9GT1cUTXBUX9ZDRa2WhQ$$zwuB3iaiu93ecWs2Taf_n3ZwCwWpw7Z452OlzS8WDv5OLlSIy4xtG2d1ZE-VZTUxZ937ABOGdA5QnyyqAw9Pig
+      SESSION_SECRET: local-docker-session-secret-change-me
       NODE_ENV: production
     ports:
       - "3200:3000"

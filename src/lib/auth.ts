@@ -1,6 +1,9 @@
-import { createHmac, timingSafeEqual } from "crypto";
+import { createHmac, scrypt, timingSafeEqual } from "crypto";
+import { promisify } from "util";
 
 export const sessionCookieName = "dimovtax_session";
+
+const scryptAsync = promisify(scrypt);
 
 type SessionPayload = {
   exp: number;
@@ -8,23 +11,24 @@ type SessionPayload = {
 };
 
 const defaultUser = {
+  passwordHash:
+    "scrypt$nl9GT1cUTXBUX9ZDRa2WhQ$zwuB3iaiu93ecWs2Taf_n3ZwCwWpw7Z452OlzS8WDv5OLlSIy4xtG2d1ZE-VZTUxZ937ABOGdA5QnyyqAw9Pig",
   name: "Demo User",
-  password: "demo-password",
   username: "admin@dimovtax.local",
 };
 
 export function getDemoUser() {
   return {
     name: process.env.DEMO_USER_NAME ?? defaultUser.name,
-    password: process.env.DEMO_PASSWORD ?? defaultUser.password,
+    passwordHash: process.env.DEMO_PASSWORD_HASH ?? defaultUser.passwordHash,
     username: process.env.DEMO_USERNAME ?? defaultUser.username,
   };
 }
 
-export function validateCredentials(username: string, password: string) {
+export async function validateCredentials(username: string, password: string) {
   const user = getDemoUser();
 
-  return username === user.username && password === user.password;
+  return username === user.username && verifyPasswordHash(password, user.passwordHash);
 }
 
 export function createSessionToken(name = getDemoUser().name) {
@@ -91,4 +95,24 @@ function signPayload(encodedPayload: string) {
 
 function getSessionSecret() {
   return process.env.SESSION_SECRET ?? "local-development-session-secret-change-me";
+}
+
+async function verifyPasswordHash(password: string, storedHash: string) {
+  const [algorithm, salt, hash] = storedHash.split("$");
+
+  if (algorithm !== "scrypt" || !salt || !hash) {
+    return false;
+  }
+
+  const storedHashBuffer = Buffer.from(hash, "base64url");
+  const passwordHashBuffer = (await scryptAsync(
+    password,
+    salt,
+    storedHashBuffer.length,
+  )) as Buffer;
+
+  return (
+    storedHashBuffer.length === passwordHashBuffer.length &&
+    timingSafeEqual(storedHashBuffer, passwordHashBuffer)
+  );
 }

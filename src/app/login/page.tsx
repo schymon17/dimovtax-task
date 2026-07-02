@@ -4,7 +4,7 @@ import { FormEvent, useState } from "react";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("admin@dimovtax.local");
-  const [password, setPassword] = useState("demo-password");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 

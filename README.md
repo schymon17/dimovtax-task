@@ -71,12 +71,18 @@ The demo account can be configured with environment variables:
 
 ```text
 DEMO_USERNAME=admin@dimovtax.local
-DEMO_PASSWORD=demo-password
+DEMO_PASSWORD_HASH=scrypt$...
 DEMO_USER_NAME=Demo User
 SESSION_SECRET=change-this-for-shared-environments
 ```
 
-Dashboard and project API routes require a valid session cookie.
+Dashboard and project API routes require a valid HTTP-only session cookie. Passwords are verified with a `scrypt` hash, not stored or compared as plaintext.
+
+Generate a replacement password hash with:
+
+```bash
+node -e 'const { randomBytes, scryptSync } = require("crypto"); const password = process.argv[1]; const salt = randomBytes(16).toString("base64url"); const hash = scryptSync(password, salt, 64).toString("base64url"); console.log(["scrypt", salt, hash].join("$"));' "new-password"
+```
 
 ## REST API
 

@@ -18,7 +18,10 @@ const loginSchema = z.object({
 export async function POST(request: Request) {
   const parsed = loginSchema.safeParse(await request.json());
 
-  if (!parsed.success || !validateCredentials(parsed.data.username, parsed.data.password)) {
+  if (
+    !parsed.success ||
+    !(await validateCredentials(parsed.data.username, parsed.data.password))
+  ) {
     return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
   }
 
